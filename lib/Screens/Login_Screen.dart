@@ -1,5 +1,6 @@
 import 'package:activity/Screens/SignUp_Screen.dart';
 import 'package:activity/Screens/demoHome.dart';
+import 'package:activity/Screens/mainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,7 +13,7 @@ class LoginScreen extends StatelessWidget {
         body: Container(
       decoration: const BoxDecoration(
           gradient: LinearGradient(
-        colors: [Colors.cyanAccent, Colors.cyan],
+        colors: [Colors.purple, Colors.blue],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       )),
@@ -20,7 +21,7 @@ class LoginScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Card(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withOpacity(0.1),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -110,7 +111,8 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      Get.to(()=>Demohome());
+                      
+                      Get.to(()=> MainScreen());
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,

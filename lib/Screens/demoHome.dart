@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class Demohome extends StatelessWidget {
+class Demohome extends StatefulWidget {
   const Demohome({super.key});
 
   @override
@@ -12,5 +12,11 @@ class Demohome extends StatelessWidget {
         child: Text("Dustbin is here"),
       )),
     );
+  }
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    throw UnimplementedError();
   }
 }
