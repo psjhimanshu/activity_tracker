@@ -98,7 +98,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Get.to(()=>Demohome(activity: "activity", minutes: 30));
+
                         },
                         child: const Text(
                           "Forget Password",
