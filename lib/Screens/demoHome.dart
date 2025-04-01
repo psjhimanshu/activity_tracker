@@ -5,10 +5,10 @@ class Demohome extends StatefulWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: Colors.pinkAccent,
       body: Center(child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.0),
         child: Text("Dustbin is here"),
       )),
     );

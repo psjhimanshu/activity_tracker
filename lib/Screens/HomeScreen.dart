@@ -28,9 +28,13 @@ class _HomeScreenState extends State<HomeScreen> {
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerHeight: 0,
             indicator: BoxDecoration(
               color: Colors.purple, // Background color of the indicator
-              borderRadius: BorderRadius.all(Radius.circular(8)), // Rounded corners (optional)
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8)), // Rounded corners (optional)
             ),
             tabs: [
               Tab(text: "Direct"),
@@ -49,56 +53,57 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
-class HomeTabScreen1 extends StatefulWidget {
-  @override
-  _HomeTabScreen1 createState() => _HomeTabScreen1();
-}
-
-class _HomeTabScreen1 extends State<HomeTabScreen1> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  HomeTabScreen1() {
+    return SizedBox();
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-}
-
-class HomeTabScreen2 extends StatefulWidget {
-  @override
-  _HomeTabScreen2 createState() => _HomeTabScreen2();
-}
-
-class _HomeTabScreen2 extends State<HomeTabScreen2> {
-  // Declare your required controllers, variables, and methods here.
+  // HomeTabScreen2 Functionality
   final activityController = TextEditingController();
   late Timer timer;
   int _secondRemaining = 0;
   bool _isRunning = false;
+  bool _isPaused = false;
   TimeOfDay? selectedTime;
 
   void _pauseTimer() {
     if (_isRunning) {
-      timer.cancel();
+      timer.cancel(); // Stops counting down but keeps time
       setState(() {
-        _isRunning = false;
+        _isPaused = true;
+      });
+    }
+  }
+
+  void _resumeTimer() {
+    if (_secondRemaining > 0) {
+      setState(() {
+        _isPaused = false; // Mark the timer as not paused
+      });
+
+      // Start the timer again from where it was paused
+      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_secondRemaining > 0) {
+          setState(() => _secondRemaining--);
+        } else {
+          timer.cancel();
+          setState(() {
+            _isRunning = false;
+          });
+        }
       });
     }
   }
 
   void _startTimer() {
+
+    // code for stopping the timer
+    if (_isRunning) {
+      print("timer Stopped");
+      timer.cancel();
+      return;
+    }
+
     if (selectedTime == null) return;
 
     int hours = selectedTime!.hour;
@@ -113,6 +118,7 @@ class _HomeTabScreen2 extends State<HomeTabScreen2> {
     activityController.clear();
     setState(() {
       _isRunning = true;
+      _isPaused = false;
       selectedTime = null;
     });
 
@@ -160,8 +166,7 @@ class _HomeTabScreen2 extends State<HomeTabScreen2> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  HomeTabScreen2() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -274,24 +279,29 @@ class _HomeTabScreen2 extends State<HomeTabScreen2> {
                           ),
                         ),
 
-                        //Pause button ka code h testing ke liye liya tha agr  chaiye to uncomment kr dena
+                        // Pause button ka code h testing ke liye liya tha agr  chaiye to uncomment kr dena
 
-                        // SizedBox(width: 20),
-                        // ElevatedButton(
-                        //   onPressed: _isRunning ? _pauseTimer : null,
-                        //   style: ElevatedButton.styleFrom(
-                        //     backgroundColor: Colors.redAccent,
-                        //     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(10),
-                        //     ),
-                        //     elevation: 5,
-                        //   ),
-                        //   child: Text(
-                        //     "Pause",
-                        //     style: TextStyle(fontSize: 16, color: Colors.white),
-                        //   ),
-                        // ),
+                        SizedBox(width: 20),
+
+                        ElevatedButton(
+                          onPressed: _isRunning
+                              ? _isPaused
+                                  ? _resumeTimer
+                                  : _pauseTimer
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 5,
+                          ),
+                          child: Icon(_isPaused
+                              ? Icons.play_arrow_sharp
+                              : Icons.pause_sharp),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 50),
@@ -330,29 +340,8 @@ class _HomeTabScreen2 extends State<HomeTabScreen2> {
       ),
     );
   }
-}
 
-class HomeTabScreen3 extends StatefulWidget {
-  @override
-  _HomeTabScreen3 createState() => _HomeTabScreen3();
-}
-
-class _HomeTabScreen3 extends State<HomeTabScreen3> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+  HomeTabScreen3() {
+    return SizedBox();
   }
 }

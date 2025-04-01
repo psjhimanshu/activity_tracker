@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:activity/Screens/HomeScreen.dart';
 import 'package:activity/Screens/Login_Screen.dart';
+import 'package:activity/Screens/mainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // TODO: implement initState
     super.initState();
     Timer(Duration(seconds: 3),(){
-      Get.off(()=>LoginScreen());
+      Get.off(()=>MainScreen());
     });
   }
 
