@@ -113,7 +113,6 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      
                       Get.to(()=> MainScreen());
                     },
                     style: ElevatedButton.styleFrom(
