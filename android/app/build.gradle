@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.rahul_himanshu.activity"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
