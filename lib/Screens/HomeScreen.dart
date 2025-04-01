@@ -7,16 +7,87 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Home Screen",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.grey,
+            indicator: BoxDecoration(
+              color: Colors.purple, // Background color of the indicator
+              borderRadius: BorderRadius.all(Radius.circular(8)), // Rounded corners (optional)
+            ),
+            tabs: [
+              Tab(text: "Direct"),
+              Tab(text: "By Timer"),
+              Tab(text: "By Counter"),
+            ],
+          ),
+          backgroundColor: Colors.purple.shade700,
+          elevation: 0,
+        ),
+        body: TabBarView(children: [
+          HomeTabScreen1(),
+          HomeTabScreen2(),
+          HomeTabScreen3(),
+        ]),
+      ),
+    );
+  }
+}
+
+class HomeTabScreen1 extends StatefulWidget {
+  @override
+  _HomeTabScreen1 createState() => _HomeTabScreen1();
+}
+
+class _HomeTabScreen1 extends State<HomeTabScreen1> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
+}
+
+class HomeTabScreen2 extends StatefulWidget {
+  @override
+  _HomeTabScreen2 createState() => _HomeTabScreen2();
+}
+
+class _HomeTabScreen2 extends State<HomeTabScreen2> {
+  // Declare your required controllers, variables, and methods here.
   final activityController = TextEditingController();
   late Timer timer;
   int _secondRemaining = 0;
   bool _isRunning = false;
   TimeOfDay? selectedTime;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void _pauseTimer() {
     if (_isRunning) {
@@ -64,13 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  @override
-  void dispose() {
-    activityController.dispose();
-    if (_isRunning) timer.cancel();
-    super.dispose();
-  }
-
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -90,42 +154,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    activityController.dispose();
+    if (_isRunning) timer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Home Screen",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: "Direct"),
-              Tab(text: "By Timer"),
-              Tab(text: "By Counter"),
-            ],
-          ),
-          backgroundColor: Colors.purple.shade700,
-          elevation: 0,
-        ),
-        body: TabBarView(children: [
-            HomeTabScreen1(),
-          HomeTabScreen2(),
-      HomeTabScreen3(),
-        ]),
-      ),
-    );
-  }
-
-  HomeTabScreen1() {
-    return Center(child: Text("This is Sub Screen 1"));
-  }
-
-  HomeTabScreen2() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -138,135 +174,185 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple, Colors.blue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: activityController,
-                        decoration: InputDecoration(
-                          labelText: "Enter Activity",
-                          labelStyle: TextStyle(color: Colors.purple.shade700),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.purple.shade700),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                    Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: activityController,
+                                decoration: InputDecoration(
+                                  labelText: "Enter Activity",
+                                  labelStyle:
+                                      TextStyle(color: Colors.purple.shade700),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: Colors.purple.shade700),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => _selectTime(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 15, horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.purple.shade700),
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.white,
+                                  ),
+                                  child: Text(
+                                    selectedTime != null
+                                        ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
+                                        : 'Select Time',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: selectedTime != null
+                                          ? Colors.black
+                                          : Colors.grey,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectTime(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.purple.shade700),
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.white,
-                          ),
-                          child: Text(
-                            selectedTime != null
-                                ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
-                                : 'Select Time',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: selectedTime != null ? Colors.black : Colors.grey,
+                    const SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (activityController.text.isNotEmpty &&
+                                selectedTime != null) {
+                              if (!_isRunning) {
+                                _startTimer();
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple.shade700,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            textAlign: TextAlign.center,
+                            elevation: 5,
                           ),
+                          child: const Text(
+                            "Start Timer",
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ),
+
+                        //Pause button ka code h testing ke liye liya tha agr  chaiye to uncomment kr dena
+
+                        // SizedBox(width: 20),
+                        // ElevatedButton(
+                        //   onPressed: _isRunning ? _pauseTimer : null,
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor: Colors.redAccent,
+                        //     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(10),
+                        //     ),
+                        //     elevation: 5,
+                        //   ),
+                        //   child: Text(
+                        //     "Pause",
+                        //     style: TextStyle(fontSize: 16, color: Colors.white),
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                    const SizedBox(height: 50),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 40),
+                      decoration: BoxDecoration(
+                        color: _isRunning
+                            ? Colors.teal.withOpacity(0.1)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color:
+                              _isRunning ? Colors.purple.shade700 : Colors.grey,
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        _formatTime(_secondRemaining),
+                        style: TextStyle(
+                          fontSize: 60,
+                          fontWeight: FontWeight.bold,
+                          color: _isRunning
+                              ? Colors.purple.shade700
+                              : Colors.white,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    if (activityController.text.isNotEmpty && selectedTime != null) {
-                      if (!_isRunning) {
-                        _startTimer();
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple.shade700,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 5,
-                  ),
-                  child: const Text(
-                    "Start Timer",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                ),
-
-                //Pause button ka code h testing ke liye liya tha agr  chaiye to uncomment kr dena
-
-                // SizedBox(width: 20),
-                // ElevatedButton(
-                //   onPressed: _isRunning ? _pauseTimer : null,
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: Colors.redAccent,
-                //     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(10),
-                //     ),
-                //     elevation: 5,
-                //   ),
-                //   child: Text(
-                //     "Pause",
-                //     style: TextStyle(fontSize: 16, color: Colors.white),
-                //   ),
-                // ),
-              ],
-            ),
-            const SizedBox(height: 50),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
-              decoration: BoxDecoration(
-                color: _isRunning ? Colors.teal.withOpacity(0.1) : Colors.transparent,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(
-                  color: _isRunning ? Colors.purple.shade700 : Colors.grey,
-                  width: 2,
-                ),
-              ),
-              child: Text(
-                _formatTime(_secondRemaining),
-                style: TextStyle(
-                  fontSize: 60,
-                  fontWeight: FontWeight.bold,
-                  color: _isRunning ? Colors.purple.shade700 : Colors.white,
-
-                ),
-              ),
-            ),
+            )
           ],
         ),
       ),
     );
   }
+}
 
-  HomeTabScreen3() {
-    return Center(child: Text("This is Sub Screen 3"));
+class HomeTabScreen3 extends StatefulWidget {
+  @override
+  _HomeTabScreen3 createState() => _HomeTabScreen3();
+}
+
+class _HomeTabScreen3 extends State<HomeTabScreen3> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
   }
 }
