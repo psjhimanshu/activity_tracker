@@ -137,7 +137,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     );
   }
 
-  List<StackedColumnSeries<ActivityData, String>> _generateSeries(List<ActivityData> data) {
+  List<StackedBarSeries<ActivityData, String>> _generateSeries(List<ActivityData> data) {
     Set<String> allActivities = {};
 
     for (var entry in data) {
@@ -145,12 +145,16 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     }
 
     return allActivities.map((activity) {
-      return StackedColumnSeries<ActivityData, String>(
+      return StackedBarSeries<ActivityData, String>(
         name: activity,
         dataSource: data,
+        yValueMapper: (ActivityData data, _) => (data.activities[activity] ?? 0).toDouble(),
         xValueMapper: (ActivityData data, _) => "Day ${data.day}",
-        yValueMapper: (ActivityData data, _) => data.activities[activity] ?? 0,
-        dataLabelSettings: DataLabelSettings(isVisible: true),
+        dataLabelSettings: DataLabelSettings(
+          isVisible: true,
+          labelAlignment: ChartDataLabelAlignment.middle, // Center labels inside bars
+          textStyle: TextStyle(color: Colors.white, fontSize: 12), // Better contrast
+        ),
         onPointTap: (ChartPointDetails details) {
           _onBarTap(details, activity); // Pass activity name manually
         },
