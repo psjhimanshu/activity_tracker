@@ -123,17 +123,23 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
   Widget build(BuildContext context) {
     List<ActivityData> chartData = _generateChartData();
 
-    return SfCartesianChart(
-      primaryXAxis: CategoryAxis(),
-      primaryYAxis: NumericAxis(
-        title: AxisTitle(text: 'Hours'),
-        minimum: 0,
-        maximum: 24,
-        interval: 4,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: 1000,
+        child: SfCartesianChart(
+          primaryXAxis: CategoryAxis(),
+          primaryYAxis: NumericAxis(
+            title: AxisTitle(text: 'Hours'),
+            minimum: 0,
+            maximum: 24,
+            interval: 4,
+          ),
+          legend: Legend(isVisible: true),
+          tooltipBehavior: _tooltipBehavior,
+          series: _generateSeries(chartData),
+        ),
       ),
-      legend: Legend(isVisible: true),
-      tooltipBehavior: _tooltipBehavior,
-      series: _generateSeries(chartData),
     );
   }
 
