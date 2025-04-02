@@ -124,20 +124,30 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     List<ActivityData> chartData = _generateChartData();
 
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: 1000,
-        child: SfCartesianChart(
-          primaryXAxis: CategoryAxis(),
-          primaryYAxis: NumericAxis(
-            title: AxisTitle(text: 'Hours'),
-            minimum: 0,
-            maximum: 24,
-            interval: 4,
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: 1000,
+          child: SfCartesianChart(
+            plotAreaBorderWidth: 0,
+            primaryXAxis: CategoryAxis(
+              isInversed: true,
+              majorGridLines: MajorGridLines(width: 0),
+            ),
+            primaryYAxis: NumericAxis(
+              opposedPosition: true,
+              isVisible: false,
+              title: AxisTitle(text: 'Hours'),
+              minimum: 0,
+              maximum: 24,
+              interval: 4,
+              majorGridLines: MajorGridLines(width: 0),
+            ),
+            legend: Legend(isVisible: true,position:LegendPosition.left),
+            tooltipBehavior: _tooltipBehavior,
+            series: _generateSeries(chartData),
           ),
-          legend: Legend(isVisible: true),
-          tooltipBehavior: _tooltipBehavior,
-          series: _generateSeries(chartData),
         ),
       ),
     );
@@ -157,8 +167,9 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
         yValueMapper: (ActivityData data, _) => (data.activities[activity] ?? 0).toDouble(),
         xValueMapper: (ActivityData data, _) => "Day ${data.day}",
         dataLabelSettings: DataLabelSettings(
-          isVisible: true,
-          labelAlignment: ChartDataLabelAlignment.middle, // Center labels inside bars
+          showZeroValue: false,
+          labelAlignment: ChartDataLabelAlignment.middle,
+          isVisible: true, // Center labels inside bars
           textStyle: TextStyle(color: Colors.white, fontSize: 12), // Better contrast
         ),
         onPointTap: (ChartPointDetails details) {
