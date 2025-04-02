@@ -38,7 +38,8 @@ dependencies:
   get:
   audioplayers: ^6.4.0
   shared_preferences: ^2.5.3
-  syncfusion_flutter_charts:
+  syncfusion_flutter_charts: ^29.1.35
+  firebase_core: ^3.13.0
 
 dev_dependencies:
   flutter_test:

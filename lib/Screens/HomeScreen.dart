@@ -15,7 +15,66 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _recentActivitiesService.loadActivities();
+    _loadActivities();
+  }
+
+  Future<void> _loadActivities() async {
+    await _recentActivitiesService.loadActivities();
+    setState(() {}); // Refresh UI after loading
+
+  }
+
+  // Suggestions for activities
+  List<String> _getSuggestions() {
+    final previousActivities = _recentActivitiesService
+        .getActivities()
+        .map((activity) => activity['activity']!)
+        .toSet()
+        .toList();
+    final defaultSuggestions = ['Work', 'Study', 'Exercise', 'Meditation', 'Break'];
+    return [...previousActivities, ...defaultSuggestions].toSet().toList();
+  }
+
+  Future<bool> _confirmSaveActivity(String activityName) async {
+    return await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save Activity'),
+        content: Text('Do you want to save the activity "$activityName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    ) ??
+        false;
+  }
+
+  Future<bool> _confirmDeleteActivity(String activityName) async {
+    return await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Activity'),
+        content: Text('Are you sure you want to delete the activity "$activityName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    ) ??
+        false;
   }
 
   @override
@@ -91,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  HomeTabScreen1(TabController tabController) {
+  Widget HomeTabScreen1(TabController tabController) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -126,19 +185,35 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: directActivityController,
-                          decoration: InputDecoration(
-                            labelText: "Add Manual Activity",
-                            labelStyle: TextStyle(color: Colors.purple.shade700),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.purple.shade700),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
+                        child: Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return _getSuggestions();
+                            }
+                            return _getSuggestions().where((String option) {
+                              return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                            });
+                          },
+                          onSelected: (String selection) {
+                            directActivityController.text = selection;
+                          },
+                          fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                            return TextField(
+                              controller: directActivityController,
+                              focusNode: focusNode,
+                              decoration: InputDecoration(
+                                labelText: "Add Manual Activity",
+                                labelStyle: TextStyle(color: Colors.purple.shade700),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.purple.shade700),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -167,23 +242,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (directActivityController.text.isNotEmpty && directSelectedTime != null) {
-                            // Check for duplicate activity
-                            bool exists = _recentActivitiesService
-                                .getActivities()
-                                .any((activity) => activity['activity'] == directActivityController.text);
-                            if (exists) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Activity '${directActivityController.text}' already exists! Consider updating it.",
-                                  ),
-                                  backgroundColor: Colors.red,
-                                  duration: const Duration(seconds: 3),
-                                ),
-                              );
-                            } else {
+                            bool shouldSave = await _confirmSaveActivity(directActivityController.text);
+                            if (shouldSave) {
                               _recentActivitiesService.saveActivity(
                                 directActivityController.text,
                                 'Manual',
@@ -191,6 +253,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                               directActivityController.clear();
                               directSelectedTime = null;
+                              FocusScope.of(context).unfocus();
+                              // Already present, ensures focus is removed
+                              await _loadActivities();
                               setState(() {});
                             }
                           }
@@ -253,25 +318,63 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.grey,
                         ),
                       ),
-                      trailing: Icon(
-                        activity['type'] == 'Timer'
-                            ? Icons.timer
-                            : activity['type'] == 'Stopwatch'
-                            ? Icons.watch_later
-                            : Icons.handyman,
-                        color: Colors.purple.shade700,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            activity['type'] == 'Timer'
+                                ? Icons.timer
+                                : activity['type'] == 'Stopwatch'
+                                ? Icons.watch_later
+                                : Icons.handyman,
+                            color: Colors.purple.shade700,
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              bool shouldDelete = await _confirmDeleteActivity(activity['activity']!);
+                              if (shouldDelete) {
+                                await _recentActivitiesService.deleteActivity(index);
+                                setState(() {});
+                              }
+                            },
+                          ),
+                        ],
                       ),
                       onTap: () {
-                        // Navigate to Timer tab for all activities
-                        tabController.animateTo(1);
-                        setState(() {
-                          activityController.text = activity['activity']!;
-                          final durationParts = activity['duration']!.split(':');
-                          selectedTime = TimeOfDay(
-                            hour: int.parse(durationParts[0]),
-                            minute: int.parse(durationParts[1]),
-                          );
-                        });
+                        if (activity['type'] == 'Timer') {
+                          tabController.animateTo(1);
+                          Future.delayed(Duration.zero, () {
+                            setState(() {
+                              activityController.text = activity['activity'] ?? '';
+                              final durationParts = (activity['duration'] ?? '00:00:00').split(':');
+                              selectedTime = TimeOfDay(
+                                hour: int.tryParse(durationParts[0]) ?? 0,
+                                minute: int.tryParse(durationParts[1]) ?? 0,
+                              );
+                            });
+                          });
+                        } else if (activity['type'] == 'Stopwatch') {
+                          tabController.animateTo(2);
+                          Future.delayed(Duration.zero, () {
+                            setState(() {
+                              stopwatchActivityController.text = activity['activity'] ?? '';
+                            });
+                          });
+                        } else if (activity['type'] == 'Manual') {
+                          tabController.animateTo(0);
+                          Future.delayed(Duration.zero, () {
+                            setState(() {
+                              directActivityController.text = activity['activity'] ?? '';
+                              final durationParts = (activity['duration'] ?? '00:00:00').split(':');
+                              directSelectedTime = TimeOfDay(
+                                hour: int.tryParse(durationParts[0]) ?? 0,
+                                minute: int.tryParse(durationParts[1]) ?? 0,
+                              );
+                            });
+                          });
+                        }
                       },
                     ),
                   );
@@ -292,14 +395,17 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isPaused = false;
   TimeOfDay? selectedTime;
   String _currentActivity = '';
-  bool activityShowH2 = true;
+  bool activityShowH2=true;// To store the activity name
 
-  void _playSound() async {
+
+  void _playSound() async{
     await _audioPlayer.play(AssetSource('_vk.mp3'));
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3),(){
       _audioPlayer.stop();
     });
   }
+
+
 
   void _pauseTimer() {
     if (_isRunning) {
@@ -313,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _resumeTimer() {
-    if (_isPaused && _secondRemaining > 0) {
+    if (_isPaused&&_secondRemaining > 0) {
       _audioPlayer.stop();
       setState(() {
         _isRunning = true;
@@ -326,30 +432,6 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           timer.cancel();
           _playSound();
-          // Check for duplicate activity before saving
-          bool exists = _recentActivitiesService
-              .getActivities()
-              .any((activity) => activity['activity'] == _currentActivity);
-          if (exists) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  "Activity '$_currentActivity' already exists! Consider updating it.",
-                ),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          } else {
-            // Save activity only when timer ends naturally
-            int hours = _secondRemaining ~/ 3600;
-            int minutes = (_secondRemaining % 3600) ~/ 60;
-            _recentActivitiesService.saveActivity(
-              _currentActivity,
-              'Timer',
-              '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00',
-            );
-          }
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Timer Finished!"),
@@ -360,30 +442,15 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _isRunning = false;
             _isPaused = false;
-            _currentActivity = '';
+            _currentActivity = ''; // Clear activity when timer finishes
           });
         }
       });
     }
   }
 
-  void _stopTimer() {
-    if (_isRunning || _isPaused) {
-      timer.cancel();
-      _audioPlayer.stop();
-      setState(() {
-        _secondRemaining = 0;
-        _isRunning = false;
-        _isPaused = false;
-        _currentActivity = '';
-        activityShowH2 = true;
-        selectedTime = null;
-      });
-    }
-  }
-
   void _startTimer() {
-    activityShowH2 = false;
+    activityShowH2=false;
 
     if (selectedTime == null) return;
 
@@ -394,8 +461,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!_isRunning && _secondRemaining == 0) {
       _secondRemaining = (hours * 3600) + (minutes * 60);
-      _currentActivity = activityController.text;
-      // Do not save activity here; save only when timer ends
+      _currentActivity = activityController.text; // Store the activity name
+
+      _recentActivitiesService.saveActivity(_currentActivity, 'Timer', '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00');
     }
 
     activityController.clear();
@@ -411,32 +479,8 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _secondRemaining--);
       } else {
         timer.cancel();
-        activityShowH2 = true;
+        activityShowH2=true;
         _playSound();
-        // Check for duplicate activity before saving
-        bool exists = _recentActivitiesService
-            .getActivities()
-            .any((activity) => activity['activity'] == _currentActivity);
-        if (exists) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Activity '$_currentActivity' already exists! Consider updating it.",
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        } else {
-          // Save activity only when timer ends naturally
-          int hours = _secondRemaining ~/ 3600;
-          int minutes = (_secondRemaining % 3600) ~/ 60;
-          _recentActivitiesService.saveActivity(
-            _currentActivity,
-            'Timer',
-            '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00',
-          );
-        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Timer Finished!"),
@@ -447,7 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _isRunning = false;
           _isPaused = false;
-          _currentActivity = '';
+          _currentActivity = ''; // Clear activity when timer finishes
         });
       }
     });
@@ -478,16 +522,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _audioPlayer.stop();
-    _audioPlayer.dispose();
-    activityController.dispose();
-    directActivityController.dispose();
-    stopwatchActivityController.dispose();
-    if (_isRunning) timer.cancel();
-    super.dispose();
-  }
 
   HomeTabScreen2() {
     return Container(
@@ -498,7 +532,7 @@ class _HomeScreenState extends State<HomeScreen> {
           end: Alignment.bottomRight,
         ),
       ),
-      child: SingleChildScrollView(
+      child: SingleChildScrollView( // Added to fix render overflow
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -537,15 +571,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: GestureDetector(
-                          onTap: _isRunning || _isPaused ? null : () => _selectTime(context),
+                          onTap: _isRunning||_isPaused ? null : () => _selectTime(context),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: _isRunning || _isPaused ? Colors.grey.shade400 : Colors.purple.shade700,
+                                color: _isRunning||_isPaused ? Colors.grey.shade400 : Colors.purple.shade700,
                               ),
                               borderRadius: BorderRadius.circular(10),
-                              color: _isRunning || _isPaused ? Colors.grey.shade200 : Colors.white,
+                              color: _isRunning ||_isPaused? Colors.grey.shade200 : Colors.white,
                             ),
                             child: Text(
                               selectedTime != null
@@ -617,25 +651,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _isRunning || _isPaused
-                      ? ElevatedButton(
-                    onPressed: _stopTimer,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade700,
-                      padding: const EdgeInsets.all(15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 5,
-                    ),
-                    child: const Icon(
-                      Icons.stop,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  )
-                      : ElevatedButton(
-                    onPressed: () {
+                  ElevatedButton(
+                    onPressed: _isRunning||_isPaused
+                        ? null
+                        : () {
                       if (activityController.text.isNotEmpty && selectedTime != null) {
                         _startTimer();
                       }
@@ -656,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton(
-                    onPressed: _isRunning || _isPaused
+                    onPressed: _isRunning||_isPaused
                         ? () {
                       if (_isPaused) {
                         _resumeTimer();
@@ -690,7 +709,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // HomeTabScreen3 Functionality (Stopwatch)
   final stopwatchActivityController = TextEditingController();
-  late Timer stopwatchTimer;
+  Timer? stopwatchTimer;
   int _stopwatchSeconds = 0;
   bool _stopwatchRunning = false;
   bool _stopwatchPaused = false;
@@ -702,6 +721,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!_stopwatchRunning) {
       _stopwatchActivity = stopwatchActivityController.text;
       stopwatchActivityController.clear();
+      FocusScope.of(context).unfocus();
       setState(() {
         _stopwatchRunning = true;
         _stopwatchPaused = false;
@@ -717,7 +737,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _pauseStopwatch() {
     if (_stopwatchRunning) {
-      stopwatchTimer.cancel();
+      stopwatchTimer?.cancel();
       setState(() {
         _stopwatchRunning = false;
         _stopwatchPaused = true;
@@ -740,29 +760,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _resetStopwatch() {
+  void _resetStopwatch() async {
     if (_stopwatchRunning || _stopwatchPaused) {
-      stopwatchTimer.cancel();
-      // Check for duplicate activity before saving
-      bool exists = _recentActivitiesService
-          .getActivities()
-          .any((activity) => activity['activity'] == _stopwatchActivity);
-      if (exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Activity '$_stopwatchActivity' already exists! Consider updating it.",
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      } else {
-        _recentActivitiesService.saveActivity(
-          _stopwatchActivity,
-          'Stopwatch',
-          _formatStopwatchTime(_stopwatchSeconds),
-        );
+      stopwatchTimer?.cancel();
+      if (_stopwatchActivity.isNotEmpty) {
+        bool shouldSave = await _confirmSaveActivity(_stopwatchActivity);
+        if (shouldSave) {
+          _recentActivitiesService.saveActivity(
+            _stopwatchActivity,
+            'Stopwatch',
+            _formatStopwatchTime(_stopwatchSeconds),
+          );
+        }
       }
       setState(() {
         _stopwatchSeconds = 0;
@@ -770,6 +779,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _stopwatchPaused = false;
         _stopwatchActivity = '';
         activityShowH3 = true;
+        stopwatchActivityController.clear(); // Add: Clear TextField when stopwatch resets
+        FocusScope.of(context).unfocus();
       });
     }
   }
@@ -781,7 +792,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  HomeTabScreen3() {
+  Widget HomeTabScreen3() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -806,24 +817,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: stopwatchActivityController,
-                          enabled: activityShowH3,
-                          decoration: InputDecoration(
-                            labelText: "Enter Activity",
-                            labelStyle: TextStyle(color: Colors.purple.shade700),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.purple.shade700),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey.shade400),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
+                        child: Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return _getSuggestions();
+                            }
+                            return _getSuggestions().where((String option) {
+                              return option.toLowerCase().contains(
+                                  textEditingValue.text.toLowerCase());
+                            });
+                          },
+                          onSelected: (String selection) {
+                            stopwatchActivityController.text = selection;
+                          },
+                          fieldViewBuilder: (context, controller, focusNode,
+                              onFieldSubmitted) {
+                            return TextField(
+                              controller: stopwatchActivityController,
+                              focusNode: focusNode,
+                              enabled: activityShowH3,
+                              decoration: InputDecoration(
+                                labelText: "Enter Activity",
+                                labelStyle: TextStyle(
+                                    color: Colors.purple.shade700),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.purple.shade700),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                disabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.grey.shade400),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -840,7 +872,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: TextField(
-                      controller: TextEditingController(text: _stopwatchActivity),
+                      controller: TextEditingController(
+                          text: _stopwatchActivity),
                       readOnly: true,
                       decoration: InputDecoration(
                         labelText: "Current Activity",
@@ -859,12 +892,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 20, horizontal: 40),
                 decoration: BoxDecoration(
-                  color: _stopwatchRunning ? Colors.purple.withOpacity(0.1) : Colors.transparent,
+                  color: _stopwatchRunning
+                      ? Colors.purple.withOpacity(0.1)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
-                    color: _stopwatchRunning ? Colors.purple.shade700 : Colors.grey,
+                    color: _stopwatchRunning ? Colors.purple.shade700 : Colors
+                        .grey,
                     width: 2,
                   ),
                 ),
@@ -873,7 +910,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 60,
                     fontWeight: FontWeight.bold,
-                    color: _stopwatchRunning ? Colors.purple.shade700 : Colors.white,
+                    color: _stopwatchRunning ? Colors.purple.shade700 : Colors
+                        .white,
                   ),
                 ),
               ),
@@ -930,7 +968,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton(
-                    onPressed: _stopwatchRunning || _stopwatchPaused ? _resetStopwatch : null,
+                    onPressed: _stopwatchRunning || _stopwatchPaused
+                        ? _resetStopwatch
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade700,
                       padding: const EdgeInsets.all(15),
@@ -952,5 +992,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+
+  }
+  @override
+  void dispose() {
+    _audioPlayer.stop();
+    _audioPlayer.dispose();
+    activityController.dispose();
+    directActivityController.dispose();
+    stopwatchActivityController.dispose();
+    timer?.cancel();
+    stopwatchTimer?.cancel();
+    super.dispose();
   }
 }

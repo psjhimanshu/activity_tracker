@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "217981352155",
+    "project_id": "trackdeed-7436d",
+    "storage_bucket": "trackdeed-7436d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217981352155:android:4b08e6594cd0cf419bf4fe",
+        "android_client_info": {
+          "package_name": "com.rahul_himanshu.activity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRY1zM6muX1aKw_2B9i20wOlAyW-zV50k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
