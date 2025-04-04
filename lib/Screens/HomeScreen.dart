@@ -395,7 +395,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isPaused = false;
   TimeOfDay? selectedTime;
   String _currentActivity = '';
-  bool activityShowH2=true;// To store the activity name
+  bool activityShowH2=true;
+  String _initialDuration = '00:00:00';
 
 
   void _playSound() async{
@@ -418,6 +419,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _stopTimer() async {
+    if (_isRunning || _isPaused) {
+      timer.cancel();
+      _audioPlayer.stop();
+
+      // ✅ Ask user before clearing the activity
+      if (_currentActivity.isNotEmpty) {
+        bool shouldSave = await _confirmSaveActivity(_currentActivity);
+        if (shouldSave) {
+          await _saveTimerActivity();
+        }
+      }
+
+      setState(() {
+        _secondRemaining = 0;
+        _isRunning = false;
+        _isPaused = false;
+        _currentActivity = '';
+        activityShowH2 = true;
+        selectedTime = null;
+      });
+    }
+  }
+
+
   void _resumeTimer() {
     if (_isPaused&&_secondRemaining > 0) {
       _audioPlayer.stop();
@@ -426,12 +452,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _isPaused = false;
       });
 
-      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
         if (_secondRemaining > 0) {
           setState(() => _secondRemaining--);
         } else {
           timer.cancel();
           _playSound();
+          await _saveTimerActivity();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Timer Finished!"),
@@ -449,6 +476,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
+  Future<void> _saveTimerActivity() async {
+    if (_currentActivity.isNotEmpty) {
+      bool shouldSave = await _confirmSaveActivity(_currentActivity);
+      if (shouldSave) {
+        await _recentActivitiesService.saveActivity(
+          _currentActivity,
+          'Timer',
+          _initialDuration, // Use initial duration
+        );
+        setState(() {});
+      }
+    }
+  }
+
   void _startTimer() {
     activityShowH2=false;
 
@@ -461,9 +503,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!_isRunning && _secondRemaining == 0) {
       _secondRemaining = (hours * 3600) + (minutes * 60);
-      _currentActivity = activityController.text; // Store the activity name
+      if(activityController.text.isNotEmpty)
+      _currentActivity = activityController.text;// Store the activity name
 
-      _recentActivitiesService.saveActivity(_currentActivity, 'Timer', '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00');
+      _initialDuration = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00';
+
+      // _recentActivitiesService.saveActivity(_currentActivity, 'Timer', '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00');
     }
 
     activityController.clear();
@@ -474,13 +519,14 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedTime = null;
     });
 
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (_secondRemaining > 0) {
         setState(() => _secondRemaining--);
       } else {
         timer.cancel();
         activityShowH2=true;
         _playSound();
+        await _saveTimerActivity();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Timer Finished!"),
@@ -488,6 +534,8 @@ class _HomeScreenState extends State<HomeScreen> {
             duration: Duration(seconds: 3),
           ),
         );
+
+
         setState(() {
           _isRunning = false;
           _isPaused = false;
@@ -648,13 +696,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 30),
+              // In HomeTabScreen2, update the Row of buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: _isRunning||_isPaused
-                        ? null
-                        : () {
+                  // Show Play button when timer is not running or paused, otherwise show Stop button
+                  _isRunning || _isPaused
+                      ? ElevatedButton(
+                    onPressed: _stopTimer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade700,
+                      padding: const EdgeInsets.all(15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: const Icon(
+                      Icons.stop,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  )
+                      : ElevatedButton(
+                    onPressed: () {
                       if (activityController.text.isNotEmpty && selectedTime != null) {
                         _startTimer();
                       }
@@ -675,7 +740,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton(
-                    onPressed: _isRunning||_isPaused
+                    onPressed: _isRunning || _isPaused
                         ? () {
                       if (_isPaused) {
                         _resumeTimer();
