@@ -122,7 +122,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
   @override
   Widget build(BuildContext context) {
     List<ActivityData> chartData = _generateChartData();
-
+// useless comments
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: SingleChildScrollView(
