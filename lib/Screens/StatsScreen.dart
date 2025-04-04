@@ -69,7 +69,6 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 }
 
-
 class ActivityBarChart extends StatefulWidget {
   final List<Map<String, dynamic>> activities;
 
@@ -84,11 +83,12 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
   Map<String, bool> _selectedActivities = {};
   final Map<String, Color> _activityColors = {};
 
-  Color _generateColor(int index, [double saturation = 0.6, double value = 0.85]) {
-    double hue = (index * 137.508) % 360; // Golden angle in degrees for better distribution
+  Color _generateColor(int index,
+      [double saturation = 0.6, double value = 0.85]) {
+    double hue = (index * 137.508) %
+        360; // Golden angle in degrees for better distribution
     return HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
   }
-
 
   Map<String, dynamic> _generateChartData() {
     Map<int, Map<String, double>> dayWiseData = {};
@@ -100,28 +100,36 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
 
       DateTime current = start;
 
-      while (current.day != end.day || current.month != end.month || current.year != end.year) {
-        DateTime endOfDay = DateTime(current.year, current.month, current.day, 23, 59, 59);
-        double duration = double.parse((endOfDay.difference(current).inMinutes / 60.0).toStringAsFixed(2));
+      while (current.day != end.day ||
+          current.month != end.month ||
+          current.year != end.year) {
+        DateTime endOfDay =
+            DateTime(current.year, current.month, current.day, 23, 59, 59);
+        double duration = double.parse(
+            (endOfDay.difference(current).inMinutes / 60.0).toStringAsFixed(2));
 
         int day = current.day;
         dayWiseData[day] ??= {};
-        dayWiseData[day]![activityName] = (dayWiseData[day]![activityName] ?? 0) + duration;
+        dayWiseData[day]![activityName] =
+            (dayWiseData[day]![activityName] ?? 0) + duration;
 
         current = DateTime(current.year, current.month, current.day + 1, 0, 0);
       }
 
       int finalDay = end.day;
-      double remainingDuration = double.parse((end.difference(current).inMinutes / 60.0).toStringAsFixed(2));
+      double remainingDuration = double.parse(
+          (end.difference(current).inMinutes / 60.0).toStringAsFixed(2));
       dayWiseData[finalDay] ??= {};
-      dayWiseData[finalDay]![activityName] = (dayWiseData[finalDay]![activityName] ?? 0) + remainingDuration;
+      dayWiseData[finalDay]![activityName] =
+          (dayWiseData[finalDay]![activityName] ?? 0) + remainingDuration;
     }
 
     List<ActivityData> chartData = [];
     double maxHours = 0;
 
     dayWiseData.forEach((day, activities) {
-      double totalDuration = activities.values.fold(0, (sum, value) => sum + value);
+      double totalDuration =
+          activities.values.fold(0, (sum, value) => sum + value);
       if (totalDuration > maxHours) {
         maxHours = totalDuration;
       }
@@ -143,18 +151,14 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     _tooltipBehavior = TooltipBehavior(enable: true);
     super.initState();
 
-    Set<String> allActivities = widget.activities
-        .map((a) => a['activity_name'] as String)
-        .toSet();
+    Set<String> allActivities =
+        widget.activities.map((a) => a['activity_name'] as String).toSet();
 
     int colorIndex = 0;
     for (String activity in allActivities) {
       _activityColors[activity] = _generateColor(colorIndex++);
       _selectedActivities[activity] = true;
     }
-
-
-
   }
 
   void _onBarTap(ChartPointDetails details, String activity) {
@@ -166,7 +170,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Activity Details"),
-        content: Text("$activityName on $day\nDuration: ${duration.toStringAsFixed(1)} hours"),
+        content: Text(
+            "$activityName on $day\nDuration: ${duration.toStringAsFixed(1)} hours"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text("OK"))
         ],
@@ -181,8 +186,10 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     double maxHours = result['maxHours'];
     int totalDays = result['numDays'];
 
-    double chartWidth = (maxHours * 40)+150; // each hour is 40px wide (adjust as needed)
-    double chartHeight = max(MediaQuery.of(context).size.height-(245),totalDays * 50);
+    double chartWidth =
+        (maxHours * 40) + 150; // each hour is 40px wide (adjust as needed)
+    double chartHeight =
+        max(MediaQuery.of(context).size.height - (245), totalDays * 50);
 
     return Column(
       children: [
@@ -193,7 +200,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
               scrollDirection: Axis.horizontal,
               child: SizedBox(
                 width: chartWidth,
-                height: max(MediaQuery.of(context).size.height-140,chartHeight),
+                height:
+                    max(MediaQuery.of(context).size.height - 140, chartHeight),
                 // height: chartHeight,
                 child: SfCartesianChart(
                   plotAreaBorderWidth: 0,
@@ -207,10 +215,11 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                     title: AxisTitle(text: 'Hours'),
                     minimum: 0,
                     maximum: maxHours,
-                    interval: maxHours/10,
+                    interval: maxHours / 10,
                     majorGridLines: MajorGridLines(width: 0),
                   ),
-                  legend: Legend(isVisible: false,position:LegendPosition.left),
+                  legend:
+                      Legend(isVisible: false, position: LegendPosition.left),
                   tooltipBehavior: _tooltipBehavior,
                   series: _generateSeries(chartData),
                 ),
@@ -221,45 +230,97 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
         SizedBox(height: 8),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Wrap(
-            children: _selectedActivities.keys.map((activity) {
-              final isSelected = _selectedActivities[activity] ?? true;
-              final color = isSelected ? _activityColors[activity] : _activityColors[activity]!.withAlpha(130);
-              final border = Border.all(color: isSelected ? Colors.black.withAlpha(90) : Colors.black.withAlpha(40), width: 2);
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedActivities[activity] = !isSelected;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  margin: EdgeInsets.symmetric(horizontal: 4),
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(20),
-                    border: border,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 15,
-                        height: 15,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: border
-                        ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Builder(
+                builder: (context) {
+                  final allSelected =
+                      _selectedActivities.values.every((selected) => selected);
+                  final toggleText =
+                      allSelected ? "Deselect All" : "Select All";
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedActivities
+                            .updateAll((key, value) => !allSelected);
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      margin: EdgeInsets.symmetric(horizontal: 4),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300]!,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.black.withAlpha(80), width: 2),
                       ),
-                      SizedBox(width: 8) ,
-                      Text(activity, style: TextStyle(fontWeight: FontWeight.bold),),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(allSelected ? Icons.clear_all : Icons.select_all,size: 15,),
+                          SizedBox(width: 6),
+                          Text(
+                              toggleText,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ..._selectedActivities.keys.map((activity) {
+                final isSelected = _selectedActivities[activity] ?? true;
+                final color = isSelected
+                    ? _activityColors[activity]
+                    : _activityColors[activity]!.withAlpha(130);
+                final border = Border.all(
+                    color: isSelected
+                        ? Colors.black.withAlpha(90)
+                        : Colors.black.withAlpha(40),
+                    width: 2);
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedActivities[activity] = !isSelected;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    margin: EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(20),
+                      border: border,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 15,
+                          height: 15,
+                          decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: border),
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          activity,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ],
           ),
         )
       ],
@@ -274,21 +335,25 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
       allActivities.addAll(entry.activities.keys);
     }
 
-    return allActivities.where((activity) => _selectedActivities[activity] ?? true).map((activity) {
+    return allActivities
+        .where((activity) => _selectedActivities[activity] ?? true)
+        .map((activity) {
       return StackedBarSeries<ActivityData, String>(
         name: activity,
         dataSource: data,
         color: _activityColors[activity],
-        yValueMapper: (ActivityData data, _) => (data.activities[activity] ?? 0).toDouble(),
+        yValueMapper: (ActivityData data, _) =>
+            (data.activities[activity] ?? 0).toDouble(),
         xValueMapper: (ActivityData data, _) => "Day ${data.day}",
         dataLabelSettings: DataLabelSettings(
           showZeroValue: false,
           labelAlignment: ChartDataLabelAlignment.middle,
           isVisible: true, // Center labels inside bars
-          textStyle: TextStyle(color: Colors.white, fontSize: 12), // Better contrast
+          textStyle:
+              TextStyle(color: Colors.white, fontSize: 12), // Better contrast
         ),
-        onPointTap: (ChartPointDetails details) {
-          _onBarTap(details, activity); // Pass activity name manually
+        onPointLongPress: (ChartPointDetails details) {
+          _onBarTap(details, activity); // Your existing handler
         },
       );
     }).toList();
