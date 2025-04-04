@@ -225,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: GestureDetector(
                           onTap: () => _selectDirectTime(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 7),
+                            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.purple.shade700),
                               borderRadius: BorderRadius.circular(10),
@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple.shade700,
-                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: const Icon(
                           Icons.add,
                           color: Colors.white,
-                          size: 24,
+                          size: 25,
                         ),
                       ),
                     ],
