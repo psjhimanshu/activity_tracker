@@ -77,6 +77,18 @@ class _HomeScreenState extends State<HomeScreen> {
         false;
   }
 
+
+  void _showInsufficientDataSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("No Data Entered! Please enter activity details."),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -165,15 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Recent Activities",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
+
               Card(
                 elevation: 8,
                 shape: RoundedRectangleBorder(
@@ -243,8 +247,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () async {
+
                           if (directActivityController.text.isNotEmpty && directSelectedTime != null) {
-                            bool shouldSave = await _confirmSaveActivity(directActivityController.text);
+                            bool shouldSave = true;
                             if (shouldSave) {
                               _recentActivitiesService.saveActivity(
                                 directActivityController.text,
@@ -258,11 +263,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               await _loadActivities();
                               setState(() {});
                             }
+                          }else{
+                            _showInsufficientDataSnackBar();
                           }
+
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple.shade700,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -271,11 +279,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: const Icon(
                           Icons.add,
                           color: Colors.white,
-                          size: 24,
+                          size: 25,
                         ),
                       ),
                     ],
                   ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Recent Activities",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
@@ -424,13 +441,6 @@ class _HomeScreenState extends State<HomeScreen> {
       timer.cancel();
       _audioPlayer.stop();
 
-      // ✅ Ask user before clearing the activity
-      if (_currentActivity.isNotEmpty) {
-        bool shouldSave = await _confirmSaveActivity(_currentActivity);
-        if (shouldSave) {
-          await _saveTimerActivity();
-        }
-      }
 
       setState(() {
         _secondRemaining = 0;
@@ -492,6 +502,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _startTimer() {
+    if(activityController.text.isEmpty||selectedTime==null){
+      _showInsufficientDataSnackBar();
+      return;
+    }
     activityShowH2=false;
 
     if (selectedTime == null) return;
@@ -700,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Show Play button when timer is not running or paused, otherwise show Stop button
+
                   _isRunning || _isPaused
                       ? ElevatedButton(
                     onPressed: _stopTimer,
@@ -720,9 +734,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                       : ElevatedButton(
                     onPressed: () {
-                      if (activityController.text.isNotEmpty && selectedTime != null) {
-                        _startTimer();
-                      }
+                     _startTimer();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple.shade700,
@@ -782,6 +794,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool activityShowH3 = true;
 
   void _startStopwatch() {
+    if(stopwatchActivityController.text.isEmpty){
+      _showInsufficientDataSnackBar();
+      return;
+    }
     activityShowH3 = false;
     if (!_stopwatchRunning) {
       _stopwatchActivity = stopwatchActivityController.text;
@@ -984,13 +1000,27 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: _stopwatchRunning
-                        ? null
-                        : () {
-                      if (stopwatchActivityController.text.isNotEmpty) {
-                        _startStopwatch();
-                      }
+                  // Conditionally show Start or Stop button
+                  _stopwatchRunning || _stopwatchPaused
+                      ? ElevatedButton(
+                    onPressed: _resetStopwatch,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade700,
+                      padding: const EdgeInsets.all(15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: const Icon(
+                      Icons.stop,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  )
+                      : ElevatedButton(
+                    onPressed: () {
+                      _startStopwatch();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple.shade700,
@@ -1007,6 +1037,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
+                  // Pause/Resume button
                   ElevatedButton(
                     onPressed: _stopwatchRunning || _stopwatchPaused
                         ? () {
@@ -1027,25 +1058,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Icon(
                       _stopwatchPaused ? Icons.play_arrow : Icons.pause,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: _stopwatchRunning || _stopwatchPaused
-                        ? _resetStopwatch
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade700,
-                      padding: const EdgeInsets.all(15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 5,
-                    ),
-                    child: const Icon(
-                      Icons.stop,
                       color: Colors.white,
                       size: 30,
                     ),
