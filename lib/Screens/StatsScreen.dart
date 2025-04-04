@@ -50,6 +50,11 @@ class _StatsScreenState extends State<StatsScreen> {
       'start_time': DateTime(2025, 4, 6, 22, 0),
       'end_time': DateTime(2025, 4, 7, 3, 30),
     },
+    {
+      'activity_name': 'skeet',
+      'start_time': DateTime(2025, 5, 6, 22, 0),
+      'end_time': DateTime(2025, 5, 7, 3, 30),
+    },
   ];
 
   @override
@@ -177,7 +182,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     int totalDays = result['numDays'];
 
     double chartWidth = (maxHours * 40)+150; // each hour is 40px wide (adjust as needed)
-    double chartHeight = max(MediaQuery.of(context).size.height-(45),totalDays * 50);
+    double chartHeight = max(MediaQuery.of(context).size.height-(245),totalDays * 50);
 
     return Column(
       children: [
@@ -188,7 +193,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
               scrollDirection: Axis.horizontal,
               child: SizedBox(
                 width: chartWidth,
-                height: chartHeight,
+                height: max(MediaQuery.of(context).size.height-140,chartHeight),
+                // height: chartHeight,
                 child: SfCartesianChart(
                   plotAreaBorderWidth: 0,
                   primaryXAxis: CategoryAxis(
@@ -218,21 +224,23 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
           child: Wrap(
             children: _selectedActivities.keys.map((activity) {
               final isSelected = _selectedActivities[activity] ?? true;
-              final color = _activityColors[activity] ?? Colors.grey;
-
+              final color = isSelected ? _activityColors[activity] : _activityColors[activity]!.withAlpha(130);
+              final border = Border.all(color: isSelected ? Colors.black.withAlpha(90) : Colors.black.withAlpha(40), width: 2);
               return GestureDetector(
                 onTap: () {
                   setState(() {
                     _selectedActivities[activity] = !isSelected;
                   });
                 },
-                child: Container(
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
                   margin: EdgeInsets.symmetric(horizontal: 4),
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.purple.shade300 : Colors.purple.shade100,
+                    color: color,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: isSelected ? Colors.black : Colors.purple),
+                    border: border,
                   ),
                   child: Row(
                     children: [
@@ -242,10 +250,11 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                         decoration: BoxDecoration(
                           color: color,
                           shape: BoxShape.circle,
+                          border: border
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Text(activity),
+                      SizedBox(width: 8) ,
+                      Text(activity, style: TextStyle(fontWeight: FontWeight.bold),),
                     ],
                   ),
                 ),
@@ -257,7 +266,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     );
   }
 
-  List<StackedBarSeries<ActivityData, String>> _generateSeries(List<ActivityData> data) {
+  List<StackedBarSeries<ActivityData, String>> _generateSeries(
+      List<ActivityData> data) {
     Set<String> allActivities = {};
 
     for (var entry in data) {

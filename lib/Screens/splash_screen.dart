@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:activity/Screens/HomeScreen.dart';
 import 'package:activity/Screens/Login_Screen.dart';
+import 'package:activity/Screens/StatsScreen.dart';
 import 'package:activity/Screens/mainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
