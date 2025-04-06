@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Scaffold(
             appBar: AppBar(
               title: const Text(
-                "Home Screen",
+                "Trakedeed",
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
                   color: Colors.white,
