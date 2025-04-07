@@ -1,11 +1,59 @@
 import 'package:activity/Screens/SignUp_Screen.dart';
 import 'package:activity/Screens/demoHome.dart';
 import 'package:activity/Screens/mainScreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+
+  final _emailController=TextEditingController();
+  final _passwordController=TextEditingController();
+  final FirebaseFirestore _firestore= FirebaseFirestore.instance;
+
+  Future<void> _loginUser() async{
+    if(_emailController.text.isEmpty||_passwordController.text.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all details")),);
+      return;
+    }
+
+    try{
+      QuerySnapshot snapshot=await _firestore
+          .collection('userDetails')
+          .where('email',isEqualTo: _emailController.text.trim())
+          .where('password',isEqualTo: _passwordController.text.trim())
+          .get();
+
+      if(snapshot.docs.isNotEmpty){
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login Successful!")),);
+        Get.to(()=>MainScreen());
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid email or password")),
+        );
+      }
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +87,9 @@ class LoginScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   TextField(
+                    controller: _emailController,
                     decoration: InputDecoration(
-                        labelText: "Username",
+                        labelText: "Email",
                         labelStyle: const TextStyle(color: Colors.white70),
                         prefixIcon: const Icon(
                           Icons.email,
@@ -59,6 +108,7 @@ class LoginScreen extends StatelessWidget {
                     height: 20,
                   ),
                   TextField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: "Password",
@@ -82,20 +132,7 @@ class LoginScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: false,
-                            onChanged: (value) {},
-                            checkColor: Colors.white,
-                            activeColor: Colors.white70,
-                          ),
-                          const Text(
-                            "Remember Me",
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
+
                       GestureDetector(
                         onTap: () {
 
@@ -112,8 +149,8 @@ class LoginScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      Get.to(()=> MainScreen());
+                    onPressed: () async{
+                      await _loginUser();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
