@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text(
                 "Trakedeed",
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w300,
                   color: Colors.white,
                 ),
               ),
@@ -291,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 "Recent Activities",
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w300,
                   color: Colors.white,
                 ),
               ),
@@ -589,9 +589,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.purple, Colors.blue],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [Colors.blue, Colors.purple],
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
         ),
       ),
       child: SingleChildScrollView( // Added to fix render overflow
