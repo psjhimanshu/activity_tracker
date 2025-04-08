@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:activity/Database/RecentActivityService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -10,53 +11,25 @@ class StatsScreen extends StatefulWidget {
 }
 
 class _StatsScreenState extends State<StatsScreen> {
-  final List<Map<String, dynamic>> activities = [
-    {
-      'activity_name': 'Running',
-      'start_time': DateTime(2025, 4, 1, 8, 0),
-      'end_time': DateTime(2025, 4, 1, 9, 0),
-    },
-    {
-      'activity_name': 'Reading',
-      'start_time': DateTime(2025, 4, 1, 10, 0),
-      'end_time': DateTime(2025, 4, 1, 11, 30),
-    },
-    {
-      'activity_name': 'study',
-      'start_time': DateTime(2025, 4, 1, 14, 0),
-      'end_time': DateTime(2025, 4, 1, 15, 30),
-    },
-    {
-      'activity_name': 'exercise',
-      'start_time': DateTime(2025, 4, 2, 10, 0),
-      'end_time': DateTime(2025, 4, 2, 11, 30),
-    },
-    {
-      'activity_name': 'Running',
-      'start_time': DateTime(2025, 4, 2, 12, 0),
-      'end_time': DateTime(2025, 4, 2, 14, 30),
-    },
-    {
-      'activity_name': 'Reading',
-      'start_time': DateTime(2025, 4, 2, 16, 0),
-      'end_time': DateTime(2025, 4, 2, 17, 30),
-    },
-    {
-      'activity_name': 'Sleep',
-      'start_time': DateTime(2025, 4, 2, 22, 0),
-      'end_time': DateTime(2025, 4, 3, 3, 30),
-    },
-    {
-      'activity_name': 'skeet',
-      'start_time': DateTime(2025, 4, 6, 22, 0),
-      'end_time': DateTime(2025, 4, 7, 3, 30),
-    },
-    {
-      'activity_name': 'skeet',
-      'start_time': DateTime(2025, 5, 6, 22, 0),
-      'end_time': DateTime(2025, 5, 7, 3, 30),
-    },
-  ];
+
+  List<Map<String, dynamic>> activities = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadActivities();
+  }
+
+  Future<void> loadActivities() async{
+    final data = await RecentActivitiesService.fetchAllActivities();
+    setState(() {
+      activities = data;
+      isLoading = false;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +46,8 @@ class _StatsScreenState extends State<StatsScreen> {
         elevation: 0,
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.purple, Colors.blue],
@@ -80,14 +55,17 @@ class _StatsScreenState extends State<StatsScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Padding(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ActivityBarChart(activities: activities),
+          child: Container(child: ActivityBarChart(activities: activities)),
         ),
       ),
     );
   }
 }
+
 
 class ActivityBarChart extends StatefulWidget {
   final List<Map<String, dynamic>> activities;
@@ -167,22 +145,20 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
 
       DateTime current = start;
 
-      while (current.day != end.day ||
-          current.month != end.month ||
-          current.year != end.year) {
-        DateTime endOfDay =
-            DateTime(current.year, current.month, current.day, 23, 59, 59);
+      while (current.isBefore(end)) {
+        DateTime endOfDay = DateTime(current.year, current.month, current.day, 23, 59, 59);
         double duration = double.parse(
-            (endOfDay.difference(current).inMinutes / 60.0).toStringAsFixed(2));
+            (endOfDay.difference(current).inMinutes / 60.0).toStringAsFixed(2)
+        );
 
-        // Format label as "Apr-1"
         String label = DateFormat('MMM-d').format(current);
         dayWiseData[label] ??= {};
         dayWiseData[label]![activityName] =
             (dayWiseData[label]![activityName] ?? 0) + duration;
 
-        current = DateTime(current.year, current.month, current.day + 1);
+        current = current.add(Duration(days: 1));
       }
+
 
       String finalLabel = DateFormat('MMM-d').format(end);
       double remainingDuration = double.parse(
@@ -205,7 +181,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     });
 
     int numDays = dayWiseData.length;
-
+    print(chartData);
     return {
       'data': chartData,
       'maxHours': maxHours,
@@ -280,7 +256,13 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
         (maxHours * 40) + 150; // each hour is 40px wide (adjust as needed)
     double chartHeight = totalDays * 100;
 
-    return Column(
+    return chartData.isEmpty? Center(
+      child: Text(
+        "No activity data for this month.",
+        style: TextStyle(color: Colors.white70, fontSize: 16),
+      ),
+    ) :
+      Column(
       children: [
         Expanded(
           child: Align(
@@ -290,8 +272,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: chartWidth,
-                  height: chartHeight,
+                  width: 800,
+                  height: 800,
                   child: SfCartesianChart(
                     plotAreaBorderWidth: 0,
                     primaryXAxis: CategoryAxis(
@@ -457,7 +439,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
           ),
         )
       ],
-    );
+          );
   }
 
   List<StackedBarSeries<ActivityData, String>> _generateSeries(

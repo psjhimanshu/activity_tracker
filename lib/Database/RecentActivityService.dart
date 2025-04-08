@@ -43,6 +43,16 @@ class RecentActivitiesService {
   }
 
 
+  Duration parseDuration(String timeStr) {
+    List<String> parts = timeStr.split(":");
+    if (parts.length != 3) return Duration.zero;
+    int hours = int.tryParse(parts[0]) ?? 0;
+    int minutes = int.tryParse(parts[1]) ?? 0;
+    int seconds = int.tryParse(parts[2]) ?? 0;
+    return Duration(hours: hours, minutes: minutes, seconds: seconds);
+  }
+
+
 
   Future<void> saveActivity(String activity, String type, String durationStr) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -55,9 +65,14 @@ class RecentActivitiesService {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     // Parse duration and compute start/end time
-    double duration = double.tryParse(durationStr) ?? 0.0;
+    Duration duration = parseDuration(durationStr);
     DateTime endTime = DateTime.now();
-    DateTime startTime = endTime.subtract(Duration(minutes: (duration * 60).toInt()));
+    DateTime startTime = endTime.subtract(duration);
+
+
+    print("Parsed duration: $duration minutes");
+    print("Start time: $startTime");
+    print("End time: $endTime");
 
     // Step 1: Check for overlap in 'activities'
     final overlapSnapshot = await firestore
@@ -161,5 +176,53 @@ class RecentActivitiesService {
     final prefs = await SharedPreferences.getInstance();
     _recentActivities.clear();
     await prefs.remove(_key);
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchAllActivities() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    final userId = user.uid;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Fetch all activity documents
+    final querySnapshot = await firestore
+        .collection('userData')
+        .doc(userId)
+        .collection('activities')
+        .orderBy('end_time', descending: true)
+        .get();
+
+    // Convert each document to a map, converting Timestamp to DateTime
+    List<Map<String, dynamic>> activities = querySnapshot.docs.map((doc) {
+      final data = _convertTimestamps(doc.data());
+      data['id'] = doc.id; // include document ID
+      return data;
+    }).toList();
+
+    return activities;
+  }
+  static Map<String, dynamic> _convertTimestamps(Map<String, dynamic> map) {
+    final newMap = <String, dynamic>{};
+
+    map.forEach((key, value) {
+      if (value is Timestamp) {
+        newMap[key] = value.toDate();
+      } else if (value is Map<String, dynamic>) {
+        newMap[key] = _convertTimestamps(value);
+      } else if (value is List) {
+        newMap[key] = value.map((item) {
+          if (item is Timestamp) return item.toDate();
+          if (item is Map<String, dynamic>) return _convertTimestamps(item);
+          return item;
+        }).toList();
+      } else {
+        newMap[key] = value;
+      }
+    });
+
+    return newMap;
   }
 }
