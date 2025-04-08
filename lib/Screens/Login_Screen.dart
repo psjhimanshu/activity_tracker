@@ -48,13 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loginUser() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
+        const SnackBar(content: Text("Please fill all fields"),duration: Duration(seconds: 1),),
       );
       return;
     }
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(_emailController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter a valid email")),
+        const SnackBar(content: Text("Enter a valid email"),duration: Duration(seconds: 1)),
       );
       return;
     }
@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       await _saveCredentials();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login successful!")),
+        const SnackBar(content: Text("Login successful!"),duration: Duration(seconds: 1)),
       );
 
       _emailController.clear();
@@ -104,11 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
           errorMessage = "Login failed: ${e.message}";
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+        SnackBar(content: Text(errorMessage),duration: Duration(seconds: 1)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Error: $e"),duration: Duration(seconds: 1)),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -118,18 +118,18 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter your email to reset password")),
+        const SnackBar(content: Text("Enter your email to reset password"),duration: Duration(seconds: 1)),
       );
       return;
     }
     try {
       await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password reset email sent!")),
+        const SnackBar(content: Text("Password reset email sent!"),duration: Duration(seconds: 1)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Error: $e"),duration: Duration(seconds: 1)),
       );
     }
   }

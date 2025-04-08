@@ -32,25 +32,25 @@ class _SignupScreenState extends State<SignupScreen> {
         _passwordController.text.isEmpty ||
         _confirmPController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
+        const SnackBar(content: Text("Please fill all fields"),duration: Duration(seconds: 1)),
       );
       return;
     }
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(_emailController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter a valid email")),
+        const SnackBar(content: Text("Enter a valid email"),duration: Duration(seconds: 1)),
       );
       return;
     }
     if (_passwordController.text != _confirmPController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
+        const SnackBar(content: Text("Passwords do not match"),duration: Duration(seconds: 1)),
       );
       return;
     }
     if (_passwordController.text.trim().length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password must be at least 6 characters")),
+        const SnackBar(content: Text("Password must be at least 6 characters"),duration: Duration(seconds: 1)),
       );
       return;
     }
@@ -70,7 +70,7 @@ class _SignupScreenState extends State<SignupScreen> {
         'timestamp': DateTime.now().toIso8601String(),
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Signup successful!")),
+        const SnackBar(content: Text("Signup successful!"),duration: Duration(seconds: 1)),
       );
 
 
@@ -99,11 +99,12 @@ class _SignupScreenState extends State<SignupScreen> {
           errorMessage = "Signup failed: ${e.message}";
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+        SnackBar(content: Text(errorMessage),duration: Duration(seconds: 1)),
       );
     } catch (e) {
+      print(e);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Some error occurred! Try after some time."),duration: Duration(seconds: 1)),
       );
     } finally {
       setState(() => _isLoading = false);

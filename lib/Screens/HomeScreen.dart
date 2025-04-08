@@ -47,7 +47,11 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text('No'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () {
+              while(Navigator.canPop(context)){
+    Navigator.pop(context, true)    ;
+    }
+    },
             child: const Text('Yes'),
           ),
         ],
@@ -406,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // HomeTabScreen2 Functionality (Timer)
   final activityController = TextEditingController();
-  late Timer timer;
+  Timer? timer;
   int _secondRemaining = 0;
   bool _isRunning = false;
   bool _isPaused = false;
@@ -427,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _pauseTimer() {
     if (_isRunning) {
-      timer.cancel();
+      timer?.cancel();
       _audioPlayer.stop();
       setState(() {
         _isRunning = false;
@@ -438,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _stopTimer() async {
     if (_isRunning || _isPaused) {
-      timer.cancel();
+      timer?.cancel();
       _audioPlayer.stop();
 
 

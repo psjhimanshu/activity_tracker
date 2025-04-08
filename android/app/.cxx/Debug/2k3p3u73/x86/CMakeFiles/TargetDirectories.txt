@@ -1,0 +1,2 @@
+D:/Coding/GithubProjects/Activity-Tracker/activity_tracker/android/app/.cxx/Debug/2k3p3u73/x86/CMakeFiles/edit_cache.dir
+D:/Coding/GithubProjects/Activity-Tracker/activity_tracker/android/app/.cxx/Debug/2k3p3u73/x86/CMakeFiles/rebuild_cache.dir
