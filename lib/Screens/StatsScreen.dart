@@ -461,8 +461,10 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
           textStyle:
               TextStyle(color: Colors.white, fontSize: 12), // Better contrast
         ),
-        onPointLongPress: (ChartPointDetails details) {
-          _onBarTap(details, activity); // Your existing handler
+
+        onPointTap: (ChartPointDetails details) {
+          if(details.pointIndex!=null)
+          _onBarTap(details, activity); // Pass activity name manually
         },
       );
     }).toList();

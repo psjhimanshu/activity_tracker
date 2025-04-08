@@ -125,7 +125,7 @@ class _SignupScreenState extends State<SignupScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.cyanAccent, Colors.cyan],
+            colors: [Colors.purple, Colors.blue],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -134,7 +134,7 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30.0),
             child: Card(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withOpacity(0.1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
