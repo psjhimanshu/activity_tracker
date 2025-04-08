@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Scaffold(
             appBar: AppBar(
               title: const Text(
-                "Trakedeed",
+                "TrackDeed",
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
                   color: Colors.white,
@@ -295,7 +295,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () async {
-
                           if (directActivityController.text.isNotEmpty && directSelectedTime != null) {
                             bool shouldSave = true;
                             if (shouldSave) {
@@ -520,7 +519,8 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _isRunning = false;
             _isPaused = false;
-            _currentActivity = ''; // Clear activity when timer finishes
+            _currentActivity = '';
+            _loadActivities();// Clear activity when timer finishes
           });
         }
       });
@@ -537,7 +537,9 @@ class _HomeScreenState extends State<HomeScreen> {
           'Timer',
           _initialDuration, // Use initial duration
         );
-        setState(() {});
+        setState(() {
+          _loadActivities();
+        });
       }
     }
   }
@@ -594,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _isRunning = false;
           _isPaused = false;
-          _currentActivity = ''; // Clear activity when timer finishes
+          _currentActivity = '';// Clear activity when timer finishes
         });
       }
     });

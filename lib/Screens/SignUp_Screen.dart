@@ -64,7 +64,7 @@ class _SignupScreenState extends State<SignupScreen> {
     throw Exception("Request timed out. Check your internet connection.");
           }
       );
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      await _firestore.collection('userData').doc(userCredential.user!.uid).set({
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'timestamp': DateTime.now().toIso8601String(),

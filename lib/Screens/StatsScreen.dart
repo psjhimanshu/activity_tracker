@@ -283,46 +283,49 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
+          child: Align(
+            alignment: Alignment.topLeft,
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: chartWidth,
-                height: chartHeight,
-                child: SfCartesianChart(
-                  plotAreaBorderWidth: 0,
-                  primaryXAxis: CategoryAxis(
-                    isInversed: true,
-                    majorGridLines: MajorGridLines(width: 0),
-                    axisLine: const AxisLine(
-                      color: Colors.white, // Make axis line more visible
-                      width: 2, // Thicker line
+              scrollDirection: Axis.vertical,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: chartWidth,
+                  height: chartHeight,
+                  child: SfCartesianChart(
+                    plotAreaBorderWidth: 0,
+                    primaryXAxis: CategoryAxis(
+                      isInversed: true,
+                      majorGridLines: MajorGridLines(width: 0),
+                      axisLine: const AxisLine(
+                        color: Colors.white, // Make axis line more visible
+                        width: 2, // Thicker line
+                      ),
+                      labelStyle: TextStyle(
+                        color: Colors.white, // Label color
+                        fontWeight: FontWeight.w300,
+                        fontSize: 12,
+                      ),
+                      majorTickLines: const MajorTickLines(
+                        color: Colors.white, // Color of the small lines (ticks)
+                        width: 1.5,
+                        size: 6, // Length of the tick line
+                      ),
                     ),
-                    labelStyle: TextStyle(
-                      color: Colors.white, // Label color
-                      fontWeight: FontWeight.w300,
-                      fontSize: 12,
+                    primaryYAxis: NumericAxis(
+                      opposedPosition: true,
+                      isVisible: false,
+                      title: AxisTitle(text: 'Hours'),
+                      minimum: 0,
+                      maximum: maxHours,
+                      interval: max(maxHours / 10, 1),
+                      majorGridLines: MajorGridLines(width: 0),
                     ),
-                    majorTickLines: const MajorTickLines(
-                      color: Colors.white, // Color of the small lines (ticks)
-                      width: 1.5,
-                      size: 6, // Length of the tick line
-                    ),
+                    legend:
+                        Legend(isVisible: false, position: LegendPosition.left),
+                    tooltipBehavior: _tooltipBehavior,
+                    series: _generateSeries(chartData),
                   ),
-                  primaryYAxis: NumericAxis(
-                    opposedPosition: true,
-                    isVisible: false,
-                    title: AxisTitle(text: 'Hours'),
-                    minimum: 0,
-                    maximum: maxHours,
-                    interval: max(maxHours / 10, 1),
-                    majorGridLines: MajorGridLines(width: 0),
-                  ),
-                  legend:
-                      Legend(isVisible: false, position: LegendPosition.left),
-                  tooltipBehavior: _tooltipBehavior,
-                  series: _generateSeries(chartData),
                 ),
               ),
             ),

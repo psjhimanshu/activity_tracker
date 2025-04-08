@@ -1,4 +1,6 @@
 // lib/Database/RecentActivityService.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RecentActivitiesService {
@@ -6,46 +8,150 @@ class RecentActivitiesService {
   List<Map<String, String>> _recentActivities = [];
 
   Future<void> loadActivities() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String>? savedActivities = prefs.getStringList(_key);
-    if (savedActivities != null) {
-      _recentActivities = savedActivities.map((e) {
-        final parts = e.split('|');
-        return {
-          'activity': parts[0],
-          'type': parts[1],
-          'duration': parts[2],
-        };
-      }).toList();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // User not logged in
+      _recentActivities = [];
+      return;
+    }
+
+    final userId = user.uid;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    DocumentSnapshot userDoc = await firestore.collection('userData').doc(userId).get();
+
+    if (userDoc.exists) {
+      final data = userDoc.data() as Map<String, dynamic>;
+
+      if (data.containsKey('recents') && data['recents'] is List) {
+        List<dynamic> recentsList = data['recents'];
+
+        _recentActivities = recentsList.map<Map<String, String>>((item) {
+          return {
+            'activity': (item['activity_name'] ?? '').toString(),
+            'type': (item['type'] ?? '').toString(),
+            'duration': (item['duration'] ?? '').toString(),
+            'activity_id': (item ['activity_id'] ?? '').toString(),
+          };
+        }).toList();
+      } else {
+        _recentActivities = [];
+      }
+    } else {
+      _recentActivities = [];
     }
   }
 
-  Future<void> saveActivity(String activity, String type, String duration) async {
-    final prefs = await SharedPreferences.getInstance();
-    _recentActivities.insert(0, {
-      'activity': activity,
-      'type': type,
-      'duration': duration,
-    });
-    if (_recentActivities.length > 10) {
-      _recentActivities = _recentActivities.sublist(0, 10);
+
+
+  Future<void> saveActivity(String activity, String type, String durationStr) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _recentActivities = [];
+      return;
     }
-    await prefs.setStringList(
-      _key,
-      _recentActivities.map((e) => '${e['activity']}|${e['type']}|${e['duration']}').toList(),
-    );
+
+    final userId = user.uid;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Parse duration and compute start/end time
+    double duration = double.tryParse(durationStr) ?? 0.0;
+    DateTime endTime = DateTime.now();
+    DateTime startTime = endTime.subtract(Duration(minutes: (duration * 60).toInt()));
+
+    // Step 1: Check for overlap in 'activities'
+    final overlapSnapshot = await firestore
+        .collection('userData')
+        .doc(userId)
+        .collection('activities')
+        .where('end_time', isGreaterThanOrEqualTo: startTime)
+        .get();
+
+    for (var doc in overlapSnapshot.docs) {
+      DateTime existingStart = (doc['start_time'] as Timestamp).toDate();
+      DateTime existingEnd = (doc['end_time'] as Timestamp).toDate();
+
+      if (startTime.isBefore(existingEnd) && endTime.isAfter(existingStart)) {
+        throw Exception("Overlapping activity detected. Please try again later.");
+      }
+    }
+
+    // Step 2: Save activity to 'activities' subcollection
+    DocumentReference activityRef = await firestore
+        .collection('userData')
+        .doc(userId)
+        .collection('activities')
+        .add({
+      'activity_name': activity,
+      'start_time': startTime,
+      'end_time': endTime,
+    });
+
+    String activityId = activityRef.id;
+
+    // Step 3: Update recents
+    DocumentReference userDoc = firestore.collection('userData').doc(userId);
+    DocumentSnapshot snapshot = await userDoc.get();
+    List<Map<String, dynamic>> currentRecents = [];
+
+    if (snapshot.exists && snapshot.data() != null) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      final recentsData = data['recents'];
+      if (recentsData is List) {
+        currentRecents = List<Map<String, dynamic>>.from(recentsData);
+      }
+    }
+
+    currentRecents.insert(0, {
+      'activity_name': activity,
+      'type': type,
+      'duration': durationStr,
+      'activity_id': activityId,
+    });
+
+    print(activityId);
+    if (currentRecents.length > 10) {
+      currentRecents = currentRecents.sublist(0, 10);
+    }
+
+    await userDoc.update({'recents': currentRecents});
   }
+
+
 
   Future<void> deleteActivity(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (index >= 0 && index < _recentActivities.length) {
-      _recentActivities.removeAt(index);
-      await prefs.setStringList(
-        _key,
-        _recentActivities.map((e) => '${e['activity']}|${e['type']}|${e['duration']}').toList(),
-      );
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userId = user.uid;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final userDoc = firestore.collection('userData').doc(userId);
+
+    if (index < 0 || index >= _recentActivities.length) return;
+
+    // Step 1: Get the activity_id from the local list
+    String? activityId = _recentActivities[index]['activity_id'];
+    print(activityId);
+    print(_recentActivities[index]);
+    if (activityId != null && activityId.isNotEmpty) {
+      // Step 2: Delete from 'activities' subcollection
+      await firestore
+          .collection('userData')
+          .doc(userId)
+          .collection('activities')
+          .doc(activityId)
+          .delete();
     }
+
+    // Step 3: Remove from local recent list
+    _recentActivities.removeAt(index);
+
+    // Step 4: Update Firestore 'recents' with new list
+    await userDoc.update({'recents': _recentActivities});
   }
+
+
+
 
   List<Map<String, String>> getActivities() {
     return _recentActivities;
