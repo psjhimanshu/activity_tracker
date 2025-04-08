@@ -3,6 +3,7 @@ import 'package:activity/Screens/HomeScreen.dart';
 import 'package:activity/Screens/Login_Screen.dart';
 import 'package:activity/Screens/StatsScreen.dart';
 import 'package:activity/Screens/mainScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,13 +16,23 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
 
+  final FirebaseAuth _auth=FirebaseAuth.instance;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     Timer(Duration(seconds: 1),(){
-      Get.off(()=>MainScreen());
+      _checkUserStatus();
     });
+  }
+
+  Future<void> _checkUserStatus() async{
+    if(_auth.currentUser!=null){
+      Get.off(()=>MainScreen());
+    }else{
+      Get.off(()=>const LoginScreen());
+    }
   }
 
   @override
