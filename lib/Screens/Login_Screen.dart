@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
   bool _rememberMe = false;
+  bool _obscureText=true;
 
   @override
   void initState() {
@@ -76,7 +77,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       _emailController.clear();
       _passwordController.clear();
-
 
       Get.off(() =>  MainScreen());
     } on FirebaseAuthException catch (e) {
@@ -187,11 +187,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
                       TextField(
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscureText,
                         decoration: InputDecoration(
                           labelText: "Password",
                           labelStyle: const TextStyle(color: Colors.white70),
                           prefixIcon: const Icon(Icons.password, color: Colors.white70),
+                          suffixIcon: IconButton(
+                            onPressed: (){
+                            setState(() {
+                              _obscureText=!_obscureText;
+                            });
+                          },
+                            icon:Icon( _obscureText? Icons.visibility_off:Icons.visibility,
+                          color: Colors.white70,
+                            )
+                            ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: const BorderSide(color: Colors.white70),

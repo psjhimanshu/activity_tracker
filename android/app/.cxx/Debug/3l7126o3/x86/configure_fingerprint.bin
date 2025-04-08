@@ -2,6 +2,7 @@ C/C++ Structured Logl
 j
 hD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\additional_project_files.txtC
 A
+<<<<<<< Updated upstream
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	½÷·à2 ¿žå½ß2i
 g
 eD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\android_gradle_build.json	½÷·à2ç Ážå½ß2n
@@ -26,3 +27,29 @@ e
 cD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\symbol_folder_index.txt	½÷·à2Z Öžå½ß2€
 ~
 |E:\flutterSDKSetups_older\flutter_windows_3.22.1-stable\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txt	½÷·à2§ ïë˜¼ß2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	Çùß2 ¿žå½ß2i
+g
+eD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\android_gradle_build.json	Çùß2ç Ážå½ß2n
+l
+jD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\android_gradle_build_mini.json	Çùß2À Ôžå½ß2[
+Y
+WD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\build.ninja	Çùß2úÖ «å½ß2_
+]
+[D:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\build.ninja.txt	‘Çùß2d
+b
+`D:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\build_file_index.txt	‘Çùß2| Öžå½ß2e
+c
+aD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\compile_commands.json	‘Çùß2i
+g
+eD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\compile_commands.json.bin	‘Çùß2	o
+m
+kD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\metadata_generation_command.txt	‘Çùß2
+ï Ôžå½ß2b
+`
+^D:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\prefab_config.json	‘Çùß2( Õžå½ß2g
+e
+cD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\x86\symbol_folder_index.txt	‘Çùß2Z Öžå½ß2€
+~
+|E:\flutterSDKSetups_older\flutter_windows_3.22.1-stable\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txt	‘Çùß2§ ïë˜¼ß2
+>>>>>>> Stashed changes

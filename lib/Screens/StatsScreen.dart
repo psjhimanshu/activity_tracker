@@ -482,6 +482,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
           textStyle:
               TextStyle(color: Colors.white, fontSize: 12), // Better contrast
         ),
+
           dataLabelMapper: (ActivityData data, _) {
             final duration = data.activities[activity];
             return duration != null ? "${duration.toStringAsFixed(1)}hr" : "";

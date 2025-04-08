@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadActivities() async {
     await _recentActivitiesService.loadActivities();
-    setState(() {}); // Refresh UI after loading
+    setState(() {});
 
   }
 
@@ -59,6 +59,50 @@ class _HomeScreenState extends State<HomeScreen> {
     ) ??
         false;
   }
+
+  Future<bool> _confirmSaveActivityTimer(String activityName) async {
+    // Play sound
+    await _audioPlayer.play(AssetSource('_vk.mp3'));
+
+    // Show dialog
+    final result = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Save Activity'),
+          content: Text('Do you want to save the activity "$activityName"?'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                if (_audioPlayer.state == PlayerState.playing) {
+                  await _audioPlayer.stop();
+                }
+                if (context.mounted) {
+                  Navigator.of(context).pop(false);
+                }
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (_audioPlayer.state == PlayerState.playing) {
+                  await _audioPlayer.stop();
+                }
+                if (context.mounted) {
+                  Navigator.of(context).pop(true);
+                }
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
 
   Future<bool> _confirmDeleteActivity(String activityName) async {
     return await showDialog(
@@ -420,13 +464,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String _initialDuration = '00:00:00';
 
 
-  void _playSound() async{
-    await _audioPlayer.play(AssetSource('_vk.mp3'));
-    Timer(const Duration(seconds: 3),(){
-      _audioPlayer.stop();
-    });
-  }
-
 
 
   void _pauseTimer() {
@@ -471,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() => _secondRemaining--);
         } else {
           timer.cancel();
-          _playSound();
+          await _confirmSaveActivityTimer(_currentActivity);
           await _saveTimerActivity();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -543,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         timer.cancel();
         activityShowH2=true;
-        _playSound();
+        await _confirmSaveActivityTimer(_currentActivity);
         await _saveTimerActivity();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
