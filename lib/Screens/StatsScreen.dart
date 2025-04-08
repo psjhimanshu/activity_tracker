@@ -61,11 +61,17 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Activities record ",style: TextStyle(
-        fontWeight: FontWeight.w300,
-        color: Colors.white,
-      ),),backgroundColor: Colors.purple.shade700,
-        elevation: 0,),
+      appBar: AppBar(
+        title: Text(
+          "Activities record ",
+          style: TextStyle(
+            fontWeight: FontWeight.w300,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.purple.shade700,
+        elevation: 0,
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -290,16 +296,16 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                     isInversed: true,
                     majorGridLines: MajorGridLines(width: 0),
                     axisLine: const AxisLine(
-                      color: Colors.black, // Make axis line more visible
-                      width: 2,            // Thicker line
+                      color: Colors.white, // Make axis line more visible
+                      width: 2, // Thicker line
                     ),
                     labelStyle: TextStyle(
-                      color: Colors.black, // Label color
-                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Label color
+                      fontWeight: FontWeight.w300,
                       fontSize: 12,
                     ),
                     majorTickLines: const MajorTickLines(
-                      color: Colors.black, // Color of the small lines (ticks)
+                      color: Colors.white, // Color of the small lines (ticks)
                       width: 1.5,
                       size: 6, // Length of the tick line
                     ),
@@ -360,10 +366,10 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                       padding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.grey[300]!,
+                        color: Colors.grey[300]!.withAlpha(80),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Colors.black.withAlpha(80), width: 2),
+                            color: Colors.white.withAlpha(80), width: 2),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -371,11 +377,14 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                           Icon(
                             allSelected ? Icons.clear_all : Icons.select_all,
                             size: 15,
+                            color: Colors.white,
                           ),
                           SizedBox(width: 6),
                           Text(
                             toggleText,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w300,
+                                color: Colors.white),
                           ),
                         ],
                       ),
@@ -390,8 +399,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                     : _activityColors[activity]!.withAlpha(130);
                 final border = Border.all(
                     color: isSelected
-                        ? Colors.black.withAlpha(90)
-                        : Colors.black.withAlpha(40),
+                        ? Colors.white.withAlpha(90)
+                        : Colors.white.withAlpha(40),
                     width: 2);
                 return GestureDetector(
                   onTap: () {
@@ -420,9 +429,21 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                               border: border),
                         ),
                         SizedBox(width: 8),
-                        Text(
-                          activity,
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Text(
+                            activity,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w300, color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  offset: Offset(0.5, 0.5),
+                                  blurRadius: 1.0,
+                                  color: Colors.black.withAlpha(150),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -462,9 +483,12 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
               TextStyle(color: Colors.white, fontSize: 12), // Better contrast
         ),
 
-        onPointTap: (ChartPointDetails details) {
-          if(details.pointIndex!=null)
-          _onBarTap(details, activity); // Pass activity name manually
+          dataLabelMapper: (ActivityData data, _) {
+            final duration = data.activities[activity];
+            return duration != null ? "${duration.toStringAsFixed(1)}hr" : "";
+          },
+        onPointLongPress: (ChartPointDetails details) {
+          _onBarTap(details, activity); // Your existing handler
         },
       );
     }).toList();
@@ -503,7 +527,8 @@ class _MonthSwitcherState extends State<MonthSwitcher> {
   void initState() {
     super.initState();
     _currentIndex = widget.availableMonths.indexOf(widget.selectedMonth);
-    _pageController = PageController(initialPage: _currentIndex, viewportFraction: 1.0);
+    _pageController =
+        PageController(initialPage: _currentIndex, viewportFraction: 1.0);
   }
 
   void _goToPage(int newIndex) {
@@ -525,8 +550,14 @@ class _MonthSwitcherState extends State<MonthSwitcher> {
     return Row(
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: _currentIndex > 0 ? () => _goToPage(_currentIndex - 1) : null,
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: _currentIndex > 0
+                ? Colors.white
+                : Colors.grey,
+          ),
+          onPressed:
+              _currentIndex > 0 ? () => _goToPage(_currentIndex - 1) : null,
         ),
         Expanded(
           child: SizedBox(
@@ -546,9 +577,9 @@ class _MonthSwitcherState extends State<MonthSwitcher> {
                   child: Text(
                     DateFormat('MMM yyyy').format(month),
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.white),
                   ),
                 );
               },
@@ -556,7 +587,12 @@ class _MonthSwitcherState extends State<MonthSwitcher> {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.arrow_forward_ios),
+          icon: Icon(
+            Icons.arrow_forward_ios,
+            color: _currentIndex < widget.availableMonths.length - 1
+                ? Colors.white
+                : Colors.grey,
+          ),
           onPressed: _currentIndex < widget.availableMonths.length - 1
               ? () => _goToPage(_currentIndex + 1)
               : null,
