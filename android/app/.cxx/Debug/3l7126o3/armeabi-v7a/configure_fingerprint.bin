@@ -2,6 +2,7 @@ C/C++ Structured Logt
 r
 pD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\additional_project_files.txtC
 A
+<<<<<<< Updated upstream
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	Ùö·à2 Ôå½ß2q
 o
 mD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\android_gradle_build.json	Ùö·à2÷ ×å½ß2v
@@ -26,3 +27,29 @@ m
 kD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\symbol_folder_index.txt	Úö·à2b éå½ß2€
 ~
 |E:\flutterSDKSetups_older\flutter_windows_3.22.1-stable\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txt	Úö·à2§ ïë˜¼ß2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ÎŒÇùß2 Ôå½ß2q
+o
+mD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\android_gradle_build.json	ÎŒÇùß2÷ ×å½ß2v
+t
+rD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\android_gradle_build_mini.json	ÎŒÇùß2Ð çå½ß2c
+a
+_D:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\build.ninja	ÎŒÇùß2¢× ¡å½ß2g
+e
+cD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\build.ninja.txt	ÎŒÇùß2l
+j
+hD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\build_file_index.txt	ÎŒÇùß2| éå½ß2m
+k
+iD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\compile_commands.json	ÎŒÇùß2q
+o
+mD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\compile_commands.json.bin	ÎŒÇùß2	w
+u
+sD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\metadata_generation_command.txt	ÎŒÇùß2
+—	 èå½ß2j
+h
+fD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\prefab_config.json	ÎŒÇùß2( éå½ß2o
+m
+kD:\androidProjects\ProjectRepo\activity\android\app\.cxx\Debug\3l7126o3\armeabi-v7a\symbol_folder_index.txt	ÎŒÇùß2b éå½ß2€
+~
+|E:\flutterSDKSetups_older\flutter_windows_3.22.1-stable\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txt	ÎŒÇùß2§ ïë˜¼ß2
+>>>>>>> Stashed changes
