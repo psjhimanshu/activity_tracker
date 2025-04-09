@@ -79,7 +79,7 @@ class _SignupScreenState extends State<SignupScreen> {
       _passwordController.clear();
       _confirmPController.clear();
 
-      Get.off(() =>  MainScreen());
+      Get.offAll(() =>  MainScreen());
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {

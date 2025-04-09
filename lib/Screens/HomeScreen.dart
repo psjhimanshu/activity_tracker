@@ -10,13 +10,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  final RecentActivitiesService _recentActivitiesService = RecentActivitiesService();
+  late final RecentActivitiesService _recentActivitiesService;
 
   @override
   void initState() {
     super.initState();
-    _loadActivities();
+      super.initState();
+      _recentActivitiesService = RecentActivitiesService(
+        onLoadActivities: () {
+          if (mounted) {
+            setState(() {});
+          }
+        },
+      );
+      _recentActivitiesService.loadActivities();
   }
+
 
   Future<void> _loadActivities() async {
     await _recentActivitiesService.loadActivities();
@@ -47,11 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text('No'),
           ),
           TextButton(
-            onPressed: () {
-              while(Navigator.canPop(context)){
-    Navigator.pop(context, true)    ;
-    }
-    },
+          onPressed: () => Navigator.pop(context, true),
             child: const Text('Yes'),
           ),
         ],
@@ -343,6 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
               _recentActivitiesService.getActivities().isEmpty
                   ? const Center(
                 child: Text(
@@ -368,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16),
                       title: Text(
-                        activity['activity']!,
+                        activity['activity_name']!,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
@@ -390,14 +396,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ? Icons.timer
                                 : activity['type'] == 'Stopwatch'
                                 ? Icons.watch_later
-                                : Icons.handyman,
+                                : Icons.edit,
                             color: Colors.purple.shade700,
                           ),
                           const SizedBox(width: 8),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () async {
-                              bool shouldDelete = await _confirmDeleteActivity(activity['activity']!);
+                              bool shouldDelete = await _confirmDeleteActivity(activity['activity_name']!);
                               if (shouldDelete) {
                                 await _recentActivitiesService.deleteActivity(index);
                                 setState(() {});
@@ -411,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           tabController.animateTo(1);
                           Future.delayed(Duration.zero, () {
                             setState(() {
-                              activityController.text = activity['activity'] ?? '';
+                              activityController.text = activity['activity_name'] ?? '';
                               final durationParts = (activity['duration'] ?? '00:00:00').split(':');
                               selectedTime = TimeOfDay(
                                 hour: int.tryParse(durationParts[0]) ?? 0,
@@ -423,14 +429,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           tabController.animateTo(2);
                           Future.delayed(Duration.zero, () {
                             setState(() {
-                              stopwatchActivityController.text = activity['activity'] ?? '';
+                              stopwatchActivityController.text = activity['activity_name'] ?? '';
                             });
                           });
                         } else if (activity['type'] == 'Manual') {
                           tabController.animateTo(0);
                           Future.delayed(Duration.zero, () {
                             setState(() {
-                              directActivityController.text = activity['activity'] ?? '';
+                              directActivityController.text = activity['activity_name'] ?? '';
                               final durationParts = (activity['duration'] ?? '00:00:00').split(':');
                               directSelectedTime = TimeOfDay(
                                 hour: int.tryParse(durationParts[0]) ?? 0,
@@ -757,7 +763,6 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   _isRunning || _isPaused
                       ? ElevatedButton(
                     onPressed: _stopTimer,

@@ -19,11 +19,17 @@ class _StatsScreenState extends State<StatsScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    AllActivityService.registerCallback(() {
+      setState(() {
+        isLoading = true;
+        loadActivities();
+      });
+    });
     loadActivities();
   }
 
   Future<void> loadActivities() async{
-    final data = await RecentActivitiesService.fetchAllActivities();
+    final data = await AllActivityService.fetchAllActivities();
     setState(() {
       activities = data;
       isLoading = false;
@@ -144,23 +150,27 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
       String activityName = activity['activity_name'];
 
       DateTime current = start;
-
+      print(activityName);
+      print(start);
+      print(end);
       while (current.isBefore(end)) {
         DateTime endOfDay = DateTime(current.year, current.month, current.day, 23, 59, 59);
+        DateTime segmentEnd = end.isBefore(endOfDay) ? end : endOfDay;
+
         double duration = double.parse(
-            (endOfDay.difference(current).inMinutes / 60.0).toStringAsFixed(2)
+            (segmentEnd.difference(current).inSeconds / 3600.0).toStringAsFixed(2)
         );
+
+        print("dur: $duration");
 
         String label = DateFormat('MMM-d').format(current);
         dayWiseData[label] ??= {};
         dayWiseData[label]![activityName] =
             (dayWiseData[label]![activityName] ?? 0) + duration;
 
-        current = current.add(Duration(days: 1));
+        current = segmentEnd.add(Duration(seconds: 1));
       }
-
-
-      String finalLabel = DateFormat('MMM-d').format(end);
+    String finalLabel = DateFormat('MMM-d').format(end);
       double remainingDuration = double.parse(
           (end.difference(current).inMinutes / 60.0).toStringAsFixed(2));
       dayWiseData[finalLabel] ??= {};
@@ -179,9 +189,15 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
       }
       chartData.add(ActivityData(label, activities));
     });
+    for (var data in chartData) {
+      print('Label: ${data.label}');
+      data.activities.forEach((activity, value) {
+        print('  $activity: $value hr');
+      });
+    }
 
     int numDays = dayWiseData.length;
-    print(chartData);
+    print(numDays);print(maxHours);
     return {
       'data': chartData,
       'maxHours': maxHours,
@@ -194,7 +210,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     // TODO: implement initState
     _tooltipBehavior = TooltipBehavior(enable: true);
     super.initState();
-
+    if (widget.activities.isEmpty) return;
     Set<String> allActivities =
         widget.activities.map((a) => a['activity_name'] as String).toSet();
 
@@ -253,12 +269,12 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
     int totalDays = result['numDays'];
 
     double chartWidth =
-        (maxHours * 40) + 150; // each hour is 40px wide (adjust as needed)
+        (maxHours * 60) + 200; // each hour is 40px wide (adjust as needed)
     double chartHeight = totalDays * 100;
 
     return chartData.isEmpty? Center(
       child: Text(
-        "No activity data for this month.",
+        "No activity data to show.",
         style: TextStyle(color: Colors.white70, fontSize: 16),
       ),
     ) :
@@ -272,8 +288,8 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: 800,
-                  height: 800,
+                  width: chartWidth,
+                  height: chartHeight,
                   child: SfCartesianChart(
                     plotAreaBorderWidth: 0,
                     primaryXAxis: CategoryAxis(
@@ -442,6 +458,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
           );
   }
 
+  // Bar chart code
   List<StackedBarSeries<ActivityData, String>> _generateSeries(
       List<ActivityData> data) {
     Set<String> allActivities = {};
@@ -470,7 +487,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
 
           dataLabelMapper: (ActivityData data, _) {
             final duration = data.activities[activity];
-            return duration != null ? "${duration.toStringAsFixed(1)}hr" : "";
+            return duration != null ? "${duration.toStringAsFixed(2)}hr" : "";
           },
         onPointLongPress: (ChartPointDetails details) {
           _onBarTap(details, activity); // Your existing handler

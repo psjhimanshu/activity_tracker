@@ -1,11 +1,17 @@
 // lib/Database/RecentActivityService.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class RecentActivitiesService {
+class RecentActivitiesService{
+
   static const String _key = 'recent_activities';
   List<Map<String, String>> _recentActivities = [];
+
+  final VoidCallback onLoadActivities;
+  RecentActivitiesService({required this.onLoadActivities});
+
 
   Future<void> loadActivities() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -28,7 +34,7 @@ class RecentActivitiesService {
 
         _recentActivities = recentsList.map<Map<String, String>>((item) {
           return {
-            'activity': (item['activity_name'] ?? '').toString(),
+            'activity_name': (item['activity_name'] ?? '').toString(),
             'type': (item['type'] ?? '').toString(),
             'duration': (item['duration'] ?? '').toString(),
             'activity_id': (item ['activity_id'] ?? '').toString(),
@@ -40,6 +46,7 @@ class RecentActivitiesService {
     } else {
       _recentActivities = [];
     }
+      onLoadActivities();
   }
 
 
@@ -55,6 +62,8 @@ class RecentActivitiesService {
 
 
   Future<void> saveActivity(String activity, String type, String durationStr) async {
+    print("called save method");
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       _recentActivities = [];
@@ -130,6 +139,8 @@ class RecentActivitiesService {
     }
 
     await userDoc.update({'recents': currentRecents});
+    await loadActivities();
+    AllActivityService.notifyUpdate();
   }
 
 
@@ -160,9 +171,9 @@ class RecentActivitiesService {
 
     // Step 3: Remove from local recent list
     _recentActivities.removeAt(index);
-
     // Step 4: Update Firestore 'recents' with new list
     await userDoc.update({'recents': _recentActivities});
+    AllActivityService.notifyUpdate();
   }
 
 
@@ -176,6 +187,19 @@ class RecentActivitiesService {
     final prefs = await SharedPreferences.getInstance();
     _recentActivities.clear();
     await prefs.remove(_key);
+  }
+}
+
+
+class AllActivityService{
+  static VoidCallback? onUpdate;
+
+  static void registerCallback(VoidCallback callback) {
+    onUpdate = callback;
+  }
+
+  static void notifyUpdate() {
+    onUpdate?.call();
   }
 
   static Future<List<Map<String, dynamic>>> fetchAllActivities() async {

@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _emailController.clear();
       _passwordController.clear();
 
-      Get.off(() =>  MainScreen());
+      Get.offAll(() =>  MainScreen());
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
