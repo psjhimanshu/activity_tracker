@@ -1,9 +1,9 @@
 import 'dart:math';
-
-import 'package:activity/Database/RecentActivityService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+
+import '../Database/AllActivityService.dart';
 
 class StatsScreen extends StatefulWidget {
   @override
